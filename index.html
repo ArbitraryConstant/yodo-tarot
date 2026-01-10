@@ -6,7 +6,8 @@
     <title>Yodo Tarot - Rhizomatic Divination</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
-    <script src="card-mapping.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="card-mapping.js"></script></script>
 </head>
 <body>
     <div class="container">
@@ -48,6 +49,11 @@
                 <h3>What else would you like to explore?</h3>
                 <textarea id="followup-question" placeholder="Ask a follow-up question, share what's arising, or reflect on what resonates..."></textarea>
                 <button id="submit-followup" class="primary-btn">Continue Reading</button>
+                <div class="loading hidden" id="followup-loading">
+                    <div class="spinner"></div>
+                    <p>Consulting the cards...</p>
+                    <p class="timer" id="followup-timer">~30 seconds</p>
+                </div>
             </div>
         </section>
 
@@ -87,6 +93,7 @@
                         <div class="cycle-progress-bar" id="cycle-progress-bar" style="width: 25%"></div>
                     </div>
                 </div>
+                <div id="cycle-buttons" class="cycle-buttons"></div>
                 <div id="network-graph"></div>
                 <div id="mapping-insights" class="content-box"></div>
             </div>
@@ -110,6 +117,7 @@
                     <button class="export-btn" data-format="txt">Text File (.txt)</button>
                     <button class="export-btn" data-format="json">JSON Data (.json)</button>
                     <button class="export-btn" data-format="html">HTML Document (.html)</button>
+                    <button class="export-btn" data-format="pdf">PDF Document (.pdf)</button>
                 </div>
                 <button id="close-modal" class="secondary-btn">Close</button>
             </div>
@@ -119,6 +127,16 @@
         <div id="card-modal" class="card-modal">
             <div class="card-modal-close">×</div>
             <img id="card-modal-image" class="card-modal-image" src="" alt="">
+        </div>
+
+        <!-- Cycle Viewer Modal -->
+        <div id="cycle-modal" class="modal hidden">
+            <div class="modal-content cycle-modal-content">
+                <h3 id="cycle-modal-title">Cycle 1</h3>
+                <div id="cycle-modal-graph" class="cycle-modal-graph"></div>
+                <div id="cycle-modal-insights" class="content-box"></div>
+                <button id="close-cycle-modal" class="secondary-btn">Close</button>
+            </div>
         </div>
     </div>
 

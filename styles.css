@@ -474,6 +474,54 @@ h3 {
     box-shadow: 0 0 10px var(--accent);
 }
 
+/* Cycle Buttons */
+.cycle-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.cycle-button {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.8rem 1.5rem;
+    font-family: 'Fira Sans', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+    opacity: 0;
+    animation: fadeInButton 0.5s ease-out forwards;
+}
+
+.cycle-button:hover {
+    border-color: var(--accent);
+    background: var(--accent);
+    transform: translateY(-2px);
+}
+
+@keyframes fadeInButton {
+    to { opacity: 1; }
+}
+
+/* Cycle Modal */
+.cycle-modal-content {
+    max-width: 1000px;
+    width: 95%;
+}
+
+.cycle-modal-graph {
+    width: 100%;
+    height: 500px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    margin-bottom: 2rem;
+}
+
 #network-graph {
     width: 100%;
     height: 500px;

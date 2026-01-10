@@ -86,6 +86,11 @@ function initializeEventListeners() {
     });
 
     document.getElementById('new-reading-btn').addEventListener('click', resetApplication);
+    
+    // Cycle modal close
+    document.getElementById('close-cycle-modal').addEventListener('click', () => {
+        document.getElementById('cycle-modal').classList.add('hidden');
+    });
 }
 
 function handleReadingTypeSelection(choice) {
@@ -163,11 +168,16 @@ async function handleFollowupQuestion() {
         return;
     }
 
-    // Hide follow-up section, show loading
-    document.getElementById('followup-section').classList.add('hidden');
+    // Hide follow-up textarea and button, show loading at bottom
+    document.getElementById('followup-question').classList.add('hidden');
+    document.getElementById('submit-followup').classList.add('hidden');
+    document.getElementById('followup-loading').classList.remove('hidden');
+    
+    // Also show loading at top
     document.getElementById('reading-loading').classList.remove('hidden');
     
     // Start countdown timer
+    startCountdownTimer('followup-timer', 30);
     startCountdownTimer('reading-timer', 30);
 
     try {
@@ -199,8 +209,12 @@ Please continue the reading, addressing their follow-up.`;
         // Show "Ready to Explore" again
         document.getElementById('reading-complete').classList.remove('hidden');
         
-        // Clear the follow-up textarea
+        // Reset follow-up section
         document.getElementById('followup-question').value = '';
+        document.getElementById('followup-question').classList.remove('hidden');
+        document.getElementById('submit-followup').classList.remove('hidden');
+        document.getElementById('followup-loading').classList.add('hidden');
+        document.getElementById('followup-section').classList.add('hidden');
         
         // Scroll to the new content smoothly
         setTimeout(() => {
@@ -217,6 +231,7 @@ Please continue the reading, addressing their follow-up.`;
         contentBox.innerHTML += '<p style="color: #f87171;">Error generating follow-up. Please try again.</p>';
     } finally {
         document.getElementById('reading-loading').classList.add('hidden');
+        document.getElementById('followup-loading').classList.add('hidden');
     }
 }
 
@@ -392,13 +407,22 @@ Format:
         const data = JSON.parse(cleanResponse);
         if (data.edges) state.edges.push(...data.edges);
         if (data.newNodes) state.nodes.push(...data.newNodes);
+        
+        // Store cycle data for viewing later
         state.cycles.push({
             cycle: cycleNum,
             insights: data.insights || '',
             nodeCount: state.nodes.length,
-            edgeCount: state.edges.length
+            edgeCount: state.edges.length,
+            nodes: JSON.parse(JSON.stringify(state.nodes)),  // Deep copy
+            edges: JSON.parse(JSON.stringify(state.edges))   // Deep copy
         });
+        
         console.log(`Cycle ${cycleNum} complete: ${state.nodes.length} nodes, ${state.edges.length} edges`);
+        
+        // Add button for this cycle
+        addCycleButton(cycleNum);
+        
     } catch (e) {
         console.error(`Error parsing cycle ${cycleNum} response:`, e);
         console.error('Response was:', response);
@@ -407,7 +431,9 @@ Format:
             cycle: cycleNum,
             insights: 'Unable to parse cycle insights',
             nodeCount: state.nodes.length,
-            edgeCount: state.edges.length
+            edgeCount: state.edges.length,
+            nodes: JSON.parse(JSON.stringify(state.nodes)),
+            edges: JSON.parse(JSON.stringify(state.edges))
         });
     }
 
@@ -420,6 +446,98 @@ Format:
 
     // Small delay between cycles for visual effect
     await new Promise(resolve => setTimeout(resolve, 1000));
+}
+
+// Add button for viewing a specific cycle
+function addCycleButton(cycleNum) {
+    const buttonsContainer = document.getElementById('cycle-buttons');
+    const button = document.createElement('button');
+    button.className = 'cycle-button';
+    button.textContent = `View Cycle ${cycleNum}`;
+    button.style.animationDelay = `${cycleNum * 0.1}s`;
+    button.onclick = () => viewCycle(cycleNum);
+    buttonsContainer.appendChild(button);
+}
+
+// View a specific cycle in modal
+function viewCycle(cycleNum) {
+    const cycleData = state.cycles[cycleNum - 1];
+    if (!cycleData) return;
+    
+    const modal = document.getElementById('cycle-modal');
+    const title = document.getElementById('cycle-modal-title');
+    const insights = document.getElementById('cycle-modal-insights');
+    
+    title.textContent = `Cycle ${cycleNum} - ${cycleData.nodeCount} nodes, ${cycleData.edgeCount} connections`;
+    insights.innerHTML = `<h4>Insights</h4><p>${cycleData.insights}</p>`;
+    
+    // Render the network graph for this cycle
+    renderCycleGraph(cycleData);
+    
+    modal.classList.remove('hidden');
+}
+
+// Render network graph for a specific cycle
+function renderCycleGraph(cycleData) {
+    const container = document.getElementById('cycle-modal-graph');
+    
+    const elements = [
+        ...cycleData.nodes.map(node => ({
+            data: { id: node.id, label: node.label, type: node.type }
+        })),
+        ...cycleData.edges.map((edge, idx) => ({
+            data: { 
+                id: `edge${idx}`, 
+                source: edge.from, 
+                target: edge.to,
+                label: edge.relationship 
+            }
+        }))
+    ];
+
+    const cy = cytoscape({
+        container: container,
+        elements: elements,
+        style: [
+            {
+                selector: 'node',
+                style: {
+                    'background-color': '#7366ff',
+                    'label': 'data(label)',
+                    'color': '#e8e8f0',
+                    'text-valign': 'center',
+                    'text-halign': 'center',
+                    'font-size': '12px',
+                    'font-family': 'Fira Sans, sans-serif',
+                    'text-wrap': 'wrap',
+                    'text-max-width': '100px',
+                    'width': '60px',
+                    'height': '60px'
+                }
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'width': 2,
+                    'line-color': '#5a4ecc',
+                    'target-arrow-color': '#5a4ecc',
+                    'target-arrow-shape': 'triangle',
+                    'curve-style': 'bezier',
+                    'opacity': 0.6
+                }
+            }
+        ],
+        layout: {
+            name: 'cose',
+            animate: false,
+            nodeRepulsion: 8000,
+            idealEdgeLength: 100,
+            nodeOverlap: 20,
+            gravity: 0.1
+        },
+        userPanningEnabled: true,
+        boxSelectionEnabled: false
+    });
 }
 
 function updateNetworkGraph() {
@@ -646,10 +764,10 @@ function formatContentWithCards(text) {
         
         // Then insert card images in order of first mention, no duplicates
         if (cardMatches.length > 0) {
-            for (let cardName of cardMatches) {
-                const cardKey = cardName.toLowerCase();
+            for (let cardInfo of cardMatches) {
+                const cardKey = cardInfo.name.toLowerCase();
                 if (CARD_MAPPING[cardKey]) {
-                    formattedParagraphs.push(createCardHTML(cardName, CARD_MAPPING[cardKey]));
+                    formattedParagraphs.push(createCardHTML(cardInfo.name, CARD_MAPPING[cardKey], cardInfo.reversed));
                 }
             }
         }
@@ -669,12 +787,13 @@ function detectCardsInTextOrdered(text) {
     
     // Find all matches with their positions
     for (let cardName of sortedCardNames) {
-        const regex = new RegExp(`\\b${cardName}\\b`, 'gi');
+        const regex = new RegExp(`\\b${cardName}(\\s+reversed)?\\b`, 'gi');
         let match;
         
         while ((match = regex.exec(lowerText)) !== null) {
             const start = match.index;
             const end = start + match[0].length;
+            const isReversed = match[1] !== undefined;
             
             // Check if this position overlaps with any existing match
             const overlaps = matchedRanges.some(range => 
@@ -687,7 +806,8 @@ function detectCardsInTextOrdered(text) {
                 matches.push({
                     name: cardName,
                     position: start,
-                    filename: CARD_MAPPING[cardName]
+                    filename: CARD_MAPPING[cardName],
+                    reversed: isReversed
                 });
                 matchedRanges.push({ start, end });
             }
@@ -697,14 +817,18 @@ function detectCardsInTextOrdered(text) {
     // Sort by position (order of appearance)
     matches.sort((a, b) => a.position - b.position);
     
-    // Remove any remaining duplicates by filename
+    // Remove any remaining duplicates by filename + reversed state
     const seen = new Set();
     const uniqueMatches = [];
     
     for (let match of matches) {
-        if (!seen.has(match.filename)) {
-            uniqueMatches.push(match.name);
-            seen.add(match.filename);
+        const key = `${match.filename}-${match.reversed}`;
+        if (!seen.has(key)) {
+            uniqueMatches.push({
+                name: match.name,
+                reversed: match.reversed
+            });
+            seen.add(key);
         }
     }
     
@@ -712,32 +836,37 @@ function detectCardsInTextOrdered(text) {
 }
 
 // Create card HTML element
-function createCardHTML(cardName, filename) {
+function createCardHTML(cardName, filename, isReversed = false) {
     const displayName = cardName
         .split(' ')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
     
+    const rotationStyle = isReversed ? 'transform: rotate(180deg);' : '';
+    const reversedLabel = isReversed ? ' (Reversed)' : '';
+    
     return `
         <div class="tarot-card-container">
             <img src="cards/${filename}" 
-                 alt="${displayName}" 
+                 alt="${displayName}${reversedLabel}" 
                  class="tarot-card-image" 
-                 onclick="openCardModal('cards/${filename}', '${displayName}')"
+                 style="${rotationStyle}"
+                 onclick="openCardModal('cards/${filename}', '${displayName}${reversedLabel}', ${isReversed})"
                  loading="lazy"
                  onerror="this.style.opacity='0.3'; this.style.border='2px dashed var(--border)';">
-            <div class="tarot-card-name">${displayName}</div>
+            <div class="tarot-card-name">${displayName}${reversedLabel}</div>
         </div>
     `;
 }
 
 // Open card in full-size modal
-function openCardModal(imagePath, cardName) {
+function openCardModal(imagePath, cardName, isReversed = false) {
     const modal = document.getElementById('card-modal');
     const modalImage = document.getElementById('card-modal-image');
     
     modalImage.src = imagePath;
     modalImage.alt = cardName;
+    modalImage.style.transform = isReversed ? 'rotate(180deg)' : 'none';
     modal.classList.add('active');
 }
 
@@ -802,16 +931,25 @@ function exportReading(format) {
         content = generateTextExport();
         mimeType = 'text/plain';
         extension = 'txt';
+        downloadFile(content, filename, mimeType, extension);
     } else if (format === 'json') {
         content = generateJSONExport();
         mimeType = 'application/json';
         extension = 'json';
+        downloadFile(content, filename, mimeType, extension);
     } else if (format === 'html') {
         content = generateHTMLExport();
         mimeType = 'text/html';
         extension = 'html';
+        downloadFile(content, filename, mimeType, extension);
+    } else if (format === 'pdf') {
+        generatePDFExport(filename);
     }
     
+    document.getElementById('export-modal').classList.add('hidden');
+}
+
+function downloadFile(content, filename, mimeType, extension) {
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -819,8 +957,70 @@ function exportReading(format) {
     a.download = `${filename}.${extension}`;
     a.click();
     URL.revokeObjectURL(url);
+}
+
+async function generatePDFExport(filename) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
     
-    document.getElementById('export-modal').classList.add('hidden');
+    let yPos = 20;
+    const pageHeight = doc.internal.pageSize.height;
+    const margin = 20;
+    const maxWidth = 170;
+    
+    // Helper to add text with word wrap
+    const addText = (text, fontSize = 12, isBold = false) => {
+        doc.setFontSize(fontSize);
+        if (isBold) doc.setFont(undefined, 'bold');
+        else doc.setFont(undefined, 'normal');
+        
+        const lines = doc.splitTextToSize(text, maxWidth);
+        lines.forEach(line => {
+            if (yPos > pageHeight - margin) {
+                doc.addPage();
+                yPos = margin;
+            }
+            doc.text(line, margin, yPos);
+            yPos += fontSize * 0.5;
+        });
+        yPos += 5;
+    };
+    
+    // Title
+    addText('YODO TAROT READING', 18, true);
+    addText(`Generated: ${new Date().toLocaleString()}`, 10);
+    yPos += 5;
+    
+    // Question
+    addText('QUESTION:', 14, true);
+    addText(state.userQuestion);
+    
+    // Reading
+    addText('READING:', 14, true);
+    const readingText = state.readingContent.replace(/---SEPARATOR---/g, '\n--- Continued Exploration ---\n');
+    addText(readingText);
+    
+    // Cycles
+    if (state.cycles.length > 0) {
+        doc.addPage();
+        yPos = margin;
+        addText('RHIZOMATIC ANALYSIS', 16, true);
+        
+        state.cycles.forEach((cycle, idx) => {
+            addText(`Cycle ${idx + 1}: ${cycle.nodeCount} nodes, ${cycle.edgeCount} connections`, 12, true);
+            addText(cycle.insights);
+        });
+    }
+    
+    // Synthesis
+    if (state.synthesis) {
+        doc.addPage();
+        yPos = margin;
+        addText('SYNTHESIS:', 14, true);
+        addText(state.synthesis);
+    }
+    
+    doc.save(`${filename}.pdf`);
 }
 
 function generateTextExport() {
