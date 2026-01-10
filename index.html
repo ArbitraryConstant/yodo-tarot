@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yodo Tarot - Rhizomatic Divination</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Yodo Tarot</h1>
+            <p class="subtitle">Rhizomatic Divination & Analysis</p>
+        </header>
+
+        <!-- Phase 1: Initial Question -->
+        <section id="phase-question" class="phase active">
+            <h2>Which aspect of your psyche shall we explore today?</h2>
+            <div class="options">
+                <button class="option-btn" data-choice="specific">A specific question or situation</button>
+                <button class="option-btn" data-choice="general">A general life reading</button>
+                <button class="option-btn" data-choice="deep">A deep psychological exploration</button>
+            </div>
+            <div id="question-input" class="hidden">
+                <textarea id="user-question" placeholder="Share your question or describe your situation..."></textarea>
+                <button id="submit-question" class="primary-btn">Begin Reading</button>
+            </div>
+        </section>
+
+        <!-- Phase 2: Tarot Reading -->
+        <section id="phase-reading" class="phase hidden">
+            <div class="loading hidden" id="reading-loading">
+                <div class="spinner"></div>
+                <p>Consulting the cards...</p>
+            </div>
+            <div id="reading-content" class="content-box"></div>
+            <div id="reading-complete" class="hidden">
+                <h3>Ready to Explore?</h3>
+                <div class="options">
+                    <button id="explore-yes" class="option-btn">Yes</button>
+                    <button id="explore-no" class="option-btn">No</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase 3: Control or Chaos -->
+        <section id="phase-choice" class="phase hidden">
+            <h2>Choose your path</h2>
+            <div class="options">
+                <button id="choice-control" class="option-btn">
+                    <span class="choice-title">Control</span>
+                    <span class="choice-desc">Use only reading-derived nodes</span>
+                </button>
+                <button id="choice-chaos" class="option-btn">
+                    <span class="choice-title">Chaos</span>
+                    <span class="choice-desc">Incorporate expanded symbolic connections</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Phase 4: Final Confirmation -->
+        <section id="phase-confirm" class="phase hidden">
+            <h2>All Set, Ready to Yodo Read?</h2>
+            <button id="begin-mapping" class="primary-btn">Begin Rhizomatic Analysis</button>
+        </section>
+
+        <!-- Phase 5: Rhizomatic Mapping -->
+        <section id="phase-mapping" class="phase hidden">
+            <div class="loading hidden" id="mapping-loading">
+                <div class="spinner"></div>
+                <p>Mapping connections...</p>
+            </div>
+            <div class="mapping-container">
+                <div class="cycle-info">
+                    <h3>Cycle <span id="current-cycle">1</span> of 4</h3>
+                    <p id="cycle-description"></p>
+                </div>
+                <div id="network-graph"></div>
+                <div id="mapping-insights" class="content-box"></div>
+            </div>
+        </section>
+
+        <!-- Phase 6: Final Synthesis -->
+        <section id="phase-synthesis" class="phase hidden">
+            <h2>Synthesis & Integration</h2>
+            <div id="synthesis-content" class="content-box"></div>
+            <div class="actions">
+                <button id="export-btn" class="primary-btn">Export Reading</button>
+                <button id="new-reading-btn" class="secondary-btn">New Reading</button>
+            </div>
+        </section>
+
+        <!-- Export Modal -->
+        <div id="export-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3>Export Your Reading</h3>
+                <div class="export-options">
+                    <button class="export-btn" data-format="txt">Text File (.txt)</button>
+                    <button class="export-btn" data-format="json">JSON Data (.json)</button>
+                    <button class="export-btn" data-format="html">HTML Document (.html)</button>
+                </div>
+                <button id="close-modal" class="secondary-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
