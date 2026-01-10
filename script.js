@@ -23,13 +23,35 @@ const state = {
 document.addEventListener('DOMContentLoaded', () => {
     initializeEventListeners();
     
-    // Landing page enter button
+    // Landing page setup
     const enterButton = document.getElementById('enter-app');
     const landingOverlay = document.getElementById('landing-overlay');
+    const landingImage = landingOverlay.querySelector('.landing-image');
     
+    console.log('Landing image src:', landingImage.src);
+    console.log('Landing image complete:', landingImage.complete);
+    
+    // Fade in landing image when loaded
+    if (landingImage.complete && landingImage.naturalHeight > 0) {
+        landingImage.classList.add('loaded');
+        console.log('Landing image already loaded');
+    } else {
+        landingImage.addEventListener('load', () => {
+            landingImage.classList.add('loaded');
+            console.log('Landing image loaded successfully');
+        });
+    }
+    
+    // Handle image load error - try alternate filename
+    landingImage.addEventListener('error', () => {
+        console.log('Landing image failed to load, trying alternate path');
+        // Try with different case or path
+        landingImage.src = './yodotarolanding.png';
+    });
+    
+    // Enter button
     enterButton.addEventListener('click', () => {
         landingOverlay.classList.add('hidden');
-        // Remove from DOM after animation
         setTimeout(() => {
             landingOverlay.remove();
         }, 1000);
