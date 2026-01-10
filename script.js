@@ -193,7 +193,7 @@ Please continue the reading, addressing their follow-up.`;
         
         // Display updated reading with visual separator
         const contentBox = document.getElementById('reading-content');
-        const formattedContent = formatContent(state.readingContent);
+        const formattedContent = formatContentWithCards(state.readingContent);
         contentBox.innerHTML = formattedContent.replace(/---SEPARATOR---/g, separator);
         
         // Show "Ready to Explore" again
@@ -559,7 +559,7 @@ Write in a clear, insightful, and actionable style.`;
     
     const response = await callClaudeAPI(systemPrompt, userPrompt);
     state.synthesis = response;
-    document.getElementById('synthesis-content').innerHTML = formatContent(response);
+    document.getElementById('synthesis-content').innerHTML = formatContentWithCards(response);
 }
 
 function generateBasicSynthesis() {
@@ -618,7 +618,7 @@ async function callClaudeAPI(systemPrompt, userPrompt) {
 }
 
 function displayReading(content) {
-    document.getElementById('reading-content').innerHTML = formatContent(content);
+    document.getElementById('reading-content').innerHTML = formatContentWithCards(content);
     document.getElementById('reading-complete').classList.remove('hidden');
 }
 
@@ -629,6 +629,113 @@ function formatContent(text) {
         .map(para => `<p>${para.trim()}</p>`)
         .join('');
 }
+
+// Enhanced format content with card detection and insertion
+function formatContentWithCards(text) {
+    const paragraphs = text.split('\n\n');
+    const formattedParagraphs = [];
+    const cardsInserted = new Set(); // Track which cards we've already inserted
+    
+    for (let para of paragraphs) {
+        const paraText = para.trim();
+        
+        // Check if this paragraph mentions any cards
+        const cardMatches = detectCardsInText(paraText);
+        
+        if (cardMatches.length > 0) {
+            // Insert paragraph first
+            formattedParagraphs.push(`<p>${paraText}</p>`);
+            
+            // Then insert card images for any newly mentioned cards
+            for (let cardName of cardMatches) {
+                const cardKey = cardName.toLowerCase();
+                
+                // Only insert each card once (first mention)
+                if (!cardsInserted.has(cardKey) && CARD_MAPPING[cardKey]) {
+                    formattedParagraphs.push(createCardHTML(cardName, CARD_MAPPING[cardKey]));
+                    cardsInserted.add(cardKey);
+                }
+            }
+        } else {
+            formattedParagraphs.push(`<p>${paraText}</p>`);
+        }
+    }
+    
+    return formattedParagraphs.join('');
+}
+
+// Detect card names in text
+function detectCardsInText(text) {
+    const foundCards = [];
+    const lowerText = text.toLowerCase();
+    
+    // Sort card names by length (longest first) to match "Knight of Cups" before "Cups"
+    const sortedCardNames = Object.keys(CARD_MAPPING).sort((a, b) => b.length - a.length);
+    
+    for (let cardName of sortedCardNames) {
+        // Use word boundaries to avoid partial matches
+        const regex = new RegExp(`\\b${cardName}\\b`, 'i');
+        if (regex.test(lowerText) && !foundCards.includes(cardName)) {
+            foundCards.push(cardName);
+        }
+    }
+    
+    return foundCards;
+}
+
+// Create card HTML element
+function createCardHTML(cardName, filename) {
+    const displayName = cardName
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    
+    return `
+        <div class="tarot-card-container">
+            <img src="cards/${filename}" 
+                 alt="${displayName}" 
+                 class="tarot-card-image" 
+                 onclick="openCardModal('cards/${filename}', '${displayName}')"
+                 loading="lazy">
+            <div class="tarot-card-name">${displayName}</div>
+        </div>
+    `;
+}
+
+// Open card in full-size modal
+function openCardModal(imagePath, cardName) {
+    const modal = document.getElementById('card-modal');
+    const modalImage = document.getElementById('card-modal-image');
+    
+    modalImage.src = imagePath;
+    modalImage.alt = cardName;
+    modal.classList.add('active');
+}
+
+// Close card modal
+function closeCardModal() {
+    const modal = document.getElementById('card-modal');
+    modal.classList.remove('active');
+}
+
+// Initialize modal close handlers
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('card-modal');
+    const closeBtn = modal.querySelector('.card-modal-close');
+    
+    closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeCardModal();
+    });
+    
+    modal.addEventListener('click', closeCardModal);
+    
+    // Prevent closing when clicking the image itself
+    const modalImage = document.getElementById('card-modal-image');
+    modalImage.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+});
 
 function parseNodesFromText(text) {
     // Fallback parser if JSON fails

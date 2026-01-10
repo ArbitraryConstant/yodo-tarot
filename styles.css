@@ -244,6 +244,93 @@ h3 {
     text-transform: uppercase;
 }
 
+/* Tarot Card Styling */
+.tarot-card-container {
+    text-align: center;
+    margin: 2.5rem auto;
+    max-width: 300px;
+}
+
+.tarot-card-image {
+    width: 205px;
+    height: 397px;
+    object-fit: contain;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.tarot-card-image:hover {
+    transform: scale(1.05) translateY(-5px);
+    box-shadow: 0 8px 24px rgba(115, 102, 255, 0.4);
+    border-color: var(--accent);
+}
+
+.tarot-card-name {
+    margin-top: 1rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    color: var(--accent);
+    font-style: italic;
+    letter-spacing: 0.05em;
+}
+
+/* Card Modal for Full Size View */
+.card-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 15, 0.95);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.card-modal.active {
+    display: flex;
+}
+
+.card-modal-image {
+    max-width: 90%;
+    max-height: 90vh;
+    object-fit: contain;
+    border: 3px solid var(--accent);
+    border-radius: 4px;
+    box-shadow: 0 10px 40px rgba(115, 102, 255, 0.6);
+}
+
+.card-modal-close {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    color: var(--text-primary);
+    font-size: 2rem;
+    font-weight: 300;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.card-modal-close:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: rotate(90deg);
+}
+
 .primary-btn {
     background: var(--accent);
     color: white;
