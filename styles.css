@@ -435,6 +435,29 @@ h3 {
     margin-top: 2rem;
 }
 
+.reading-summary {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    border-radius: 2px;
+    text-align: center;
+}
+
+.reading-summary p {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.reading-summary strong {
+    color: var(--text-primary);
+}
+
+.reading-summary #summary-text {
+    color: var(--accent);
+}
+
 .cycle-info {
     text-align: center;
     margin-bottom: 2rem;
@@ -511,6 +534,19 @@ h3 {
 .cycle-modal-content {
     max-width: 1000px;
     width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.cycle-modal-content h3 {
+    position: sticky;
+    top: 0;
+    background: var(--bg-secondary);
+    padding: 1rem 0;
+    margin: 0 0 1rem 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--border);
 }
 
 .cycle-modal-graph {
@@ -520,6 +556,36 @@ h3 {
     border: 1px solid var(--border);
     border-radius: 2px;
     margin-bottom: 2rem;
+}
+
+.modal.cycle-modal-wrapper {
+    z-index: 1500;
+}
+
+.cycle-modal-close-btn {
+    position: sticky;
+    top: 0;
+    left: 100%;
+    margin-left: 1rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    z-index: 20;
+}
+
+.cycle-modal-close-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: rotate(90deg);
 }
 
 #network-graph {

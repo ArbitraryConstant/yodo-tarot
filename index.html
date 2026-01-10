@@ -85,6 +85,9 @@
                 <p>Mapping connections...</p>
                 <p class="timer" id="mapping-timer">~72 seconds</p>
             </div>
+            <div class="reading-summary hidden" id="reading-summary">
+                <p><strong>Analyzing your reading:</strong> <span id="summary-text"></span></p>
+            </div>
             <div class="mapping-container">
                 <div class="cycle-info">
                     <h3>Cycle <span id="current-cycle">1</span> of 4</h3>
@@ -130,9 +133,12 @@
         </div>
 
         <!-- Cycle Viewer Modal -->
-        <div id="cycle-modal" class="modal hidden">
+        <div id="cycle-modal" class="modal hidden cycle-modal-wrapper" onclick="if(event.target.id === 'cycle-modal') closeCycleModal();">
             <div class="modal-content cycle-modal-content">
-                <h3 id="cycle-modal-title">Cycle 1</h3>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <h3 id="cycle-modal-title">Cycle 1</h3>
+                    <div class="cycle-modal-close-btn" onclick="closeCycleModal();">×</div>
+                </div>
                 <div id="cycle-modal-graph" class="cycle-modal-graph"></div>
                 <div id="cycle-modal-insights" class="content-box"></div>
                 <button id="close-cycle-modal" class="secondary-btn">Close</button>

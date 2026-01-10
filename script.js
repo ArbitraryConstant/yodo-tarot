@@ -88,8 +88,20 @@ function initializeEventListeners() {
     document.getElementById('new-reading-btn').addEventListener('click', resetApplication);
     
     // Cycle modal close
-    document.getElementById('close-cycle-modal').addEventListener('click', () => {
-        document.getElementById('cycle-modal').classList.add('hidden');
+    document.getElementById('close-cycle-modal').addEventListener('click', closeCycleModal);
+    
+    // ESC key closes cycle modal too
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const cardModal = document.getElementById('card-modal');
+            const cycleModal = document.getElementById('cycle-modal');
+            
+            if (cardModal.classList.contains('active')) {
+                closeCardModal();
+            } else if (!cycleModal.classList.contains('hidden')) {
+                closeCycleModal();
+            }
+        }
     });
 }
 
@@ -138,14 +150,23 @@ async function handleQuestionSubmit() {
 
 // Countdown timer utility
 let timerInterval = null;
+let followupTimerInterval = null;
 
 function startCountdownTimer(elementId, seconds) {
-    // Clear any existing timer
-    if (timerInterval) {
-        clearInterval(timerInterval);
+    // Clear any existing timer for this element
+    if (elementId === 'followup-timer') {
+        if (followupTimerInterval) {
+            clearInterval(followupTimerInterval);
+        }
+    } else {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+        }
     }
     
     const timerElement = document.getElementById(elementId);
+    if (!timerElement) return;
+    
     let remaining = seconds;
     
     const updateTimer = () => {
@@ -158,7 +179,15 @@ function startCountdownTimer(elementId, seconds) {
     };
     
     updateTimer(); // Initial update
-    timerInterval = setInterval(updateTimer, 1000);
+    
+    const interval = setInterval(updateTimer, 1000);
+    
+    // Store the interval
+    if (elementId === 'followup-timer') {
+        followupTimerInterval = interval;
+    } else {
+        timerInterval = interval;
+    }
 }
 
 async function handleFollowupQuestion() {
@@ -263,6 +292,15 @@ async function handleBeginMapping() {
     hidePhase('phase-confirm');
     showPhase('phase-mapping');
     document.getElementById('mapping-loading').classList.remove('hidden');
+    
+    // Show reading summary
+    const summary = document.getElementById('reading-summary');
+    const summaryText = document.getElementById('summary-text');
+    const questionPreview = state.userQuestion.length > 80 
+        ? state.userQuestion.substring(0, 80) + '...' 
+        : state.userQuestion;
+    summaryText.textContent = questionPreview;
+    summary.classList.remove('hidden');
     
     // Start countdown timer (18 seconds per cycle * 4 = 72 seconds)
     startCountdownTimer('mapping-timer', 72);
@@ -475,6 +513,15 @@ function viewCycle(cycleNum) {
     renderCycleGraph(cycleData);
     
     modal.classList.remove('hidden');
+    
+    // Prevent background scrolling
+    document.body.style.overflow = 'hidden';
+}
+
+// Close cycle modal
+function closeCycleModal() {
+    document.getElementById('cycle-modal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
 }
 
 // Render network graph for a specific cycle
@@ -892,13 +939,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalImage = document.getElementById('card-modal-image');
     modalImage.addEventListener('click', (e) => {
         e.stopPropagation();
-    });
-    
-    // ESC key to close modal
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
-            closeCardModal();
-        }
     });
 });
 
