@@ -45,10 +45,13 @@ function initializeEventListeners() {
     });
 
     document.getElementById('explore-no').addEventListener('click', () => {
-        hidePhase('phase-reading');
-        showPhase('phase-synthesis');
-        generateBasicSynthesis();
+        document.getElementById('reading-complete').classList.add('hidden');
+        document.getElementById('followup-section').classList.remove('hidden');
+        document.getElementById('followup-question').focus();
     });
+    
+    // Submit follow-up question
+    document.getElementById('submit-followup').addEventListener('click', handleFollowupQuestion);
 
     // Control or Chaos
     document.getElementById('choice-control').addEventListener('click', () => {
@@ -120,6 +123,57 @@ async function handleQuestionSubmit() {
         console.error('Error generating reading:', error);
         document.getElementById('reading-content').innerHTML = 
             '<p style="color: #f87171;">Error generating reading. Please check your API key and try again.</p>';
+    } finally {
+        document.getElementById('reading-loading').classList.add('hidden');
+    }
+}
+
+async function handleFollowupQuestion() {
+    const followup = document.getElementById('followup-question').value.trim();
+    if (!followup) {
+        alert('Please enter a follow-up question or comment.');
+        return;
+    }
+
+    // Hide follow-up section, show loading
+    document.getElementById('followup-section').classList.add('hidden');
+    document.getElementById('reading-loading').classList.remove('hidden');
+
+    try {
+        // Create context-aware follow-up prompt
+        const systemPrompt = `You are continuing a tarot reading. The original reading is provided as context. Now the querent has a follow-up question or comment. Provide additional insight, draw new cards if needed, or explore the themes more deeply.
+
+Original reading:
+${state.readingContent}
+
+Continue in the same philosophical, insightful style. Keep your response focused and substantial.`;
+
+        const userPrompt = `The querent says: "${followup}"
+
+Please continue the reading, addressing their follow-up.`;
+
+        const response = await callClaudeAPI(systemPrompt, userPrompt);
+        
+        // Append to reading content
+        state.readingContent += '\n\n---\n\n' + response;
+        
+        // Display updated reading
+        const contentBox = document.getElementById('reading-content');
+        contentBox.innerHTML = formatContent(state.readingContent);
+        
+        // Show "Ready to Explore" again
+        document.getElementById('reading-complete').classList.remove('hidden');
+        
+        // Clear the follow-up textarea
+        document.getElementById('followup-question').value = '';
+        
+        // Scroll to bottom
+        contentBox.scrollTop = contentBox.scrollHeight;
+        
+    } catch (error) {
+        console.error('Error generating follow-up:', error);
+        document.getElementById('reading-content').innerHTML += 
+            '<p style="color: #f87171;">Error generating follow-up. Please try again.</p>';
     } finally {
         document.getElementById('reading-loading').classList.add('hidden');
     }
@@ -374,7 +428,56 @@ function updateNetworkGraph() {
             idealEdgeLength: 100,
             nodeOverlap: 20,
             gravity: 0.1
+        },
+        // Enable panning with both mouse buttons
+        userPanningEnabled: true,
+        boxSelectionEnabled: false
+    });
+    
+    // Add right-click panning support
+    let isPanning = false;
+    let panStartPos = { x: 0, y: 0 };
+    
+    container.addEventListener('mousedown', (e) => {
+        if (e.button === 2) { // Right mouse button
+            e.preventDefault();
+            isPanning = true;
+            panStartPos = { x: e.clientX, y: e.clientY };
+            container.style.cursor = 'grabbing';
         }
+    });
+    
+    container.addEventListener('mousemove', (e) => {
+        if (isPanning) {
+            e.preventDefault();
+            const dx = e.clientX - panStartPos.x;
+            const dy = e.clientY - panStartPos.y;
+            
+            const pan = state.cy.pan();
+            state.cy.pan({
+                x: pan.x + dx,
+                y: pan.y + dy
+            });
+            
+            panStartPos = { x: e.clientX, y: e.clientY };
+        }
+    });
+    
+    container.addEventListener('mouseup', (e) => {
+        if (e.button === 2) {
+            isPanning = false;
+            container.style.cursor = 'default';
+        }
+    });
+    
+    container.addEventListener('mouseleave', () => {
+        isPanning = false;
+        container.style.cursor = 'default';
+    });
+    
+    // Prevent context menu on right-click
+    container.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
     });
 }
 
