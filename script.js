@@ -634,49 +634,61 @@ function formatContent(text) {
 function formatContentWithCards(text) {
     const paragraphs = text.split('\n\n');
     const formattedParagraphs = [];
-    const cardsInserted = new Set(); // Track which cards we've already inserted
     
     for (let para of paragraphs) {
         const paraText = para.trim();
         
         // Check if this paragraph mentions any cards
-        const cardMatches = detectCardsInText(paraText);
+        const cardMatches = detectCardsInTextOrdered(paraText);
         
+        // Insert paragraph first
+        formattedParagraphs.push(`<p>${paraText}</p>`);
+        
+        // Then insert card images in order of first mention, no duplicates
         if (cardMatches.length > 0) {
-            // Insert paragraph first
-            formattedParagraphs.push(`<p>${paraText}</p>`);
-            
-            // Then insert card images for any newly mentioned cards
             for (let cardName of cardMatches) {
                 const cardKey = cardName.toLowerCase();
-                
-                // Only insert each card once (first mention)
-                if (!cardsInserted.has(cardKey) && CARD_MAPPING[cardKey]) {
+                if (CARD_MAPPING[cardKey]) {
                     formattedParagraphs.push(createCardHTML(cardName, CARD_MAPPING[cardKey]));
-                    cardsInserted.add(cardKey);
                 }
             }
-        } else {
-            formattedParagraphs.push(`<p>${paraText}</p>`);
         }
     }
     
     return formattedParagraphs.join('');
 }
 
-// Detect card names in text
-function detectCardsInText(text) {
+// Detect card names in text, maintaining order and removing duplicates
+function detectCardsInTextOrdered(text) {
     const foundCards = [];
+    const foundCardKeys = new Set();
     const lowerText = text.toLowerCase();
     
     // Sort card names by length (longest first) to match "Knight of Cups" before "Cups"
     const sortedCardNames = Object.keys(CARD_MAPPING).sort((a, b) => b.length - a.length);
     
+    // Find all matches with their positions
+    const matches = [];
     for (let cardName of sortedCardNames) {
-        // Use word boundaries to avoid partial matches
-        const regex = new RegExp(`\\b${cardName}\\b`, 'i');
-        if (regex.test(lowerText) && !foundCards.includes(cardName)) {
-            foundCards.push(cardName);
+        const regex = new RegExp(`\\b${cardName}\\b`, 'gi');
+        let match;
+        while ((match = regex.exec(lowerText)) !== null) {
+            matches.push({
+                name: cardName,
+                position: match.index
+            });
+        }
+    }
+    
+    // Sort by position (order of appearance)
+    matches.sort((a, b) => a.position - b.position);
+    
+    // Add cards in order, skipping duplicates
+    for (let match of matches) {
+        const cardKey = match.name.toLowerCase();
+        if (!foundCardKeys.has(cardKey)) {
+            foundCards.push(match.name);
+            foundCardKeys.add(cardKey);
         }
     }
     
@@ -696,7 +708,8 @@ function createCardHTML(cardName, filename) {
                  alt="${displayName}" 
                  class="tarot-card-image" 
                  onclick="openCardModal('cards/${filename}', '${displayName}')"
-                 loading="lazy">
+                 loading="lazy"
+                 onerror="this.style.opacity='0.3'; this.style.border='2px dashed var(--border)';">
             <div class="tarot-card-name">${displayName}</div>
         </div>
     `;
@@ -734,6 +747,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalImage = document.getElementById('card-modal-image');
     modalImage.addEventListener('click', (e) => {
         e.stopPropagation();
+    });
+    
+    // ESC key to close modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeCardModal();
+        }
     });
 });
 

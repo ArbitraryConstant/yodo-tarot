@@ -249,6 +249,18 @@ h3 {
     text-align: center;
     margin: 2.5rem auto;
     max-width: 300px;
+    animation: fadeInCard 0.6s ease-out;
+}
+
+@keyframes fadeInCard {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px) scale(0.95);
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1);
+    }
 }
 
 .tarot-card-image {
@@ -550,6 +562,28 @@ h3 {
     
     #network-graph {
         height: 400px;
+    }
+    
+    /* Mobile card sizing */
+    .tarot-card-container {
+        max-width: 100%;
+        margin: 2rem auto;
+    }
+    
+    .tarot-card-image {
+        width: min(205px, 80vw);
+        height: auto;
+        aspect-ratio: 205/397;
+    }
+    
+    .card-modal-image {
+        max-width: 85%;
+        max-height: 85vh;
+    }
+    
+    .card-modal-close {
+        top: 1rem;
+        right: 1rem;
     }
 }
 
