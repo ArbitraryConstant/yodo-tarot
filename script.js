@@ -660,39 +660,55 @@ function formatContentWithCards(text) {
 
 // Detect card names in text, maintaining order and removing duplicates
 function detectCardsInTextOrdered(text) {
-    const foundCards = [];
-    const foundCardKeys = new Set();
     const lowerText = text.toLowerCase();
+    const matches = [];
+    const matchedRanges = []; // Track which parts of text we've already matched
     
     // Sort card names by length (longest first) to match "Knight of Cups" before "Cups"
     const sortedCardNames = Object.keys(CARD_MAPPING).sort((a, b) => b.length - a.length);
     
     // Find all matches with their positions
-    const matches = [];
     for (let cardName of sortedCardNames) {
         const regex = new RegExp(`\\b${cardName}\\b`, 'gi');
         let match;
+        
         while ((match = regex.exec(lowerText)) !== null) {
-            matches.push({
-                name: cardName,
-                position: match.index
-            });
+            const start = match.index;
+            const end = start + match[0].length;
+            
+            // Check if this position overlaps with any existing match
+            const overlaps = matchedRanges.some(range => 
+                (start >= range.start && start < range.end) ||
+                (end > range.start && end <= range.end) ||
+                (start <= range.start && end >= range.end)
+            );
+            
+            if (!overlaps) {
+                matches.push({
+                    name: cardName,
+                    position: start,
+                    filename: CARD_MAPPING[cardName]
+                });
+                matchedRanges.push({ start, end });
+            }
         }
     }
     
     // Sort by position (order of appearance)
     matches.sort((a, b) => a.position - b.position);
     
-    // Add cards in order, skipping duplicates
+    // Remove any remaining duplicates by filename
+    const seen = new Set();
+    const uniqueMatches = [];
+    
     for (let match of matches) {
-        const cardKey = match.name.toLowerCase();
-        if (!foundCardKeys.has(cardKey)) {
-            foundCards.push(match.name);
-            foundCardKeys.add(cardKey);
+        if (!seen.has(match.filename)) {
+            uniqueMatches.push(match.name);
+            seen.add(match.filename);
         }
     }
     
-    return foundCards;
+    return uniqueMatches;
 }
 
 // Create card HTML element
