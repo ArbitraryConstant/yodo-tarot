@@ -12,6 +12,7 @@
         <header>
             <h1>Yodo Tarot</h1>
             <p class="subtitle">Rhizomatic Divination & Analysis</p>
+            <p class="hint">Navigate the network: Pan with left or right mouse • Zoom with scroll</p>
         </header>
 
         <!-- Phase 1: Initial Question -->
@@ -33,6 +34,7 @@
             <div class="loading hidden" id="reading-loading">
                 <div class="spinner"></div>
                 <p>Consulting the cards...</p>
+                <p class="timer" id="reading-timer">~30 seconds</p>
             </div>
             <div id="reading-content" class="content-box"></div>
             <div id="reading-complete" class="hidden">
@@ -44,7 +46,7 @@
             </div>
             <div id="followup-section" class="hidden">
                 <h3>What else would you like to explore?</h3>
-                <textarea id="followup-question" placeholder="Ask a follow-up question or share what's arising for you..."></textarea>
+                <textarea id="followup-question" placeholder="Ask a follow-up question, share what's arising, or reflect on what resonates..."></textarea>
                 <button id="submit-followup" class="primary-btn">Continue Reading</button>
             </div>
         </section>
@@ -75,11 +77,15 @@
             <div class="loading hidden" id="mapping-loading">
                 <div class="spinner"></div>
                 <p>Mapping connections...</p>
+                <p class="timer" id="mapping-timer">~72 seconds</p>
             </div>
             <div class="mapping-container">
                 <div class="cycle-info">
                     <h3>Cycle <span id="current-cycle">1</span> of 4</h3>
                     <p id="cycle-description"></p>
+                    <div class="cycle-progress">
+                        <div class="cycle-progress-bar" id="cycle-progress-bar" style="width: 25%"></div>
+                    </div>
                 </div>
                 <div id="network-graph"></div>
                 <div id="mapping-insights" class="content-box"></div>

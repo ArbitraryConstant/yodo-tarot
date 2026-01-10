@@ -114,6 +114,9 @@ async function handleQuestionSubmit() {
     hidePhase('phase-question');
     showPhase('phase-reading');
     document.getElementById('reading-loading').classList.remove('hidden');
+    
+    // Start countdown timer
+    startCountdownTimer('reading-timer', 30);
 
     try {
         const reading = await generateReading(state.readingType, question);
@@ -128,6 +131,31 @@ async function handleQuestionSubmit() {
     }
 }
 
+// Countdown timer utility
+let timerInterval = null;
+
+function startCountdownTimer(elementId, seconds) {
+    // Clear any existing timer
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+    
+    const timerElement = document.getElementById(elementId);
+    let remaining = seconds;
+    
+    const updateTimer = () => {
+        if (remaining > 0) {
+            timerElement.textContent = `~${remaining} seconds`;
+            remaining--;
+        } else {
+            timerElement.textContent = 'Almost there...';
+        }
+    };
+    
+    updateTimer(); // Initial update
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
 async function handleFollowupQuestion() {
     const followup = document.getElementById('followup-question').value.trim();
     if (!followup) {
@@ -138,6 +166,9 @@ async function handleFollowupQuestion() {
     // Hide follow-up section, show loading
     document.getElementById('followup-section').classList.add('hidden');
     document.getElementById('reading-loading').classList.remove('hidden');
+    
+    // Start countdown timer
+    startCountdownTimer('reading-timer', 30);
 
     try {
         // Create context-aware follow-up prompt
@@ -154,12 +185,16 @@ Please continue the reading, addressing their follow-up.`;
 
         const response = await callClaudeAPI(systemPrompt, userPrompt);
         
-        // Append to reading content
-        state.readingContent += '\n\n---\n\n' + response;
+        // Create visual separator
+        const separator = `<div class="reading-separator"><h4>Continued Exploration</h4></div>`;
         
-        // Display updated reading
+        // Append to reading content with separator
+        state.readingContent += '\n\n---SEPARATOR---\n\n' + response;
+        
+        // Display updated reading with visual separator
         const contentBox = document.getElementById('reading-content');
-        contentBox.innerHTML = formatContent(state.readingContent);
+        const formattedContent = formatContent(state.readingContent);
+        contentBox.innerHTML = formattedContent.replace(/---SEPARATOR---/g, separator);
         
         // Show "Ready to Explore" again
         document.getElementById('reading-complete').classList.remove('hidden');
@@ -167,13 +202,19 @@ Please continue the reading, addressing their follow-up.`;
         // Clear the follow-up textarea
         document.getElementById('followup-question').value = '';
         
-        // Scroll to bottom
-        contentBox.scrollTop = contentBox.scrollHeight;
+        // Scroll to the new content smoothly
+        setTimeout(() => {
+            const separators = contentBox.querySelectorAll('.reading-separator');
+            const lastSeparator = separators[separators.length - 1];
+            if (lastSeparator) {
+                lastSeparator.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 100);
         
     } catch (error) {
         console.error('Error generating follow-up:', error);
-        document.getElementById('reading-content').innerHTML += 
-            '<p style="color: #f87171;">Error generating follow-up. Please try again.</p>';
+        const contentBox = document.getElementById('reading-content');
+        contentBox.innerHTML += '<p style="color: #f87171;">Error generating follow-up. Please try again.</p>';
     } finally {
         document.getElementById('reading-loading').classList.add('hidden');
     }
@@ -207,6 +248,9 @@ async function handleBeginMapping() {
     hidePhase('phase-confirm');
     showPhase('phase-mapping');
     document.getElementById('mapping-loading').classList.remove('hidden');
+    
+    // Start countdown timer (18 seconds per cycle * 4 = 72 seconds)
+    startCountdownTimer('mapping-timer', 72);
 
     try {
         // Generate nodes from reading
@@ -220,11 +264,19 @@ async function handleBeginMapping() {
         // Generate final synthesis
         await generateFinalSynthesis();
         
+        // Clear timer
+        if (timerInterval) {
+            clearInterval(timerInterval);
+        }
+        
         hidePhase('phase-mapping');
         showPhase('phase-synthesis');
     } catch (error) {
         console.error('Error in mapping process:', error);
         alert('Error during rhizomatic mapping. Please try again.');
+        if (timerInterval) {
+            clearInterval(timerInterval);
+        }
     } finally {
         document.getElementById('mapping-loading').classList.add('hidden');
     }
@@ -288,6 +340,10 @@ Return ONLY the JSON, no explanation or preamble.`;
 
 async function runMappingCycle(cycleNum) {
     document.getElementById('current-cycle').textContent = cycleNum;
+    
+    // Update progress bar
+    const progressBar = document.getElementById('cycle-progress-bar');
+    progressBar.style.width = `${(cycleNum / 4) * 100}%`;
     
     const descriptions = [
         'Identifying primary connections and patterns...',

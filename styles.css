@@ -66,6 +66,16 @@ h1 {
     text-transform: uppercase;
     font-family: 'Fira Sans', sans-serif;
     font-weight: 300;
+    margin-bottom: 0.5rem;
+}
+
+.hint {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-family: 'Fira Sans', sans-serif;
+    font-weight: 300;
+    opacity: 0.7;
+    margin-top: 1rem;
 }
 
 h2 {
@@ -178,6 +188,62 @@ h3 {
     background: var(--bg-elevated);
 }
 
+#followup-section {
+    margin-top: 3rem;
+    animation: slideIn 0.5s ease-out;
+}
+
+#followup-question {
+    width: 100%;
+    min-height: 150px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 1.5rem;
+    font-size: 1.1rem;
+    font-family: 'Crimson Pro', serif;
+    line-height: 1.8;
+    resize: vertical;
+    border-radius: 2px;
+    margin-bottom: 1rem;
+}
+
+#followup-question:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--bg-elevated);
+}
+
+.reading-separator {
+    margin: 3rem 0;
+    padding: 2rem 0;
+    border-top: 2px solid var(--accent);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+}
+
+.reading-separator::before {
+    content: '✦';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-secondary);
+    padding: 0 1rem;
+    color: var(--accent);
+    font-size: 1.5rem;
+}
+
+.reading-separator h4 {
+    text-align: center;
+    color: var(--accent);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
 .primary-btn {
     background: var(--accent);
     color: white;
@@ -219,6 +285,19 @@ h3 {
 .loading {
     text-align: center;
     padding: 3rem;
+}
+
+.loading .timer {
+    color: var(--accent);
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+    font-family: 'Fira Sans', sans-serif;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
 }
 
 .spinner {
@@ -278,6 +357,22 @@ h3 {
 #cycle-description {
     color: var(--text-secondary);
     font-size: 1rem;
+}
+
+.cycle-progress {
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 1rem;
+    overflow: hidden;
+}
+
+.cycle-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-dim));
+    transition: width 1s ease-out;
+    box-shadow: 0 0 10px var(--accent);
 }
 
 #network-graph {
