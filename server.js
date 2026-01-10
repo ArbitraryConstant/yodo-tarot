@@ -91,8 +91,13 @@ app.post('/api/claude', async (req, res) => {
     }
 });
 
-// Serve index.html for all other routes
+// Serve index.html for HTML routes (but not for files with extensions)
 app.get('*', (req, res) => {
+    // If the request has a file extension, let express.static handle it
+    if (path.extname(req.path)) {
+        return res.status(404).send('File not found');
+    }
+    // Otherwise serve index.html (for SPA routing)
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
