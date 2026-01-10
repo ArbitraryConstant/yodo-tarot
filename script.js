@@ -184,7 +184,9 @@ Extract 8-12 distinct nodes from the reading. Each node should be:
 - Brief (2-5 words)
 - Conceptually distinct from other nodes
 
-Format your response as JSON:
+IMPORTANT: Respond ONLY with valid JSON, no other text.
+
+Format:
 {
   "nodes": [
     {"id": "node1", "label": "Shadow Integration", "type": "psychological"},
@@ -194,19 +196,39 @@ Format your response as JSON:
 
 Node types: symbol, theme, insight, archetype, emotion, action`;
 
-    const userPrompt = `Extract initial nodes from this reading:\n\n${state.readingContent}
+    const userPrompt = `Extract initial nodes from this reading:
 
-${state.mappingMode === 'chaos' ? 'Feel free to add symbolic connections beyond what\'s explicitly stated.' : 'Only extract nodes directly derived from the reading.'}`;
+${state.readingContent}
+
+${state.mappingMode === 'chaos' ? 'Feel free to add symbolic connections beyond what\'s explicitly stated.' : 'Only extract nodes directly derived from the reading.'}
+
+Return ONLY the JSON, no explanation or preamble.`;
 
     const response = await callClaudeAPI(systemPrompt, userPrompt);
     
-    // Parse JSON response
+    console.log('Initial nodes response:', response.substring(0, 200));
+    
+    // Try to extract JSON from response
     try {
-        const data = JSON.parse(response);
-        state.nodes = data.nodes || [];
+        // Remove any markdown code blocks
+        let cleanResponse = response.trim();
+        if (cleanResponse.startsWith('```')) {
+            cleanResponse = cleanResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+        }
+        
+        const data = JSON.parse(cleanResponse);
+        if (data.nodes && Array.isArray(data.nodes)) {
+            state.nodes = data.nodes;
+            console.log('Successfully parsed nodes:', state.nodes.length);
+        } else {
+            throw new Error('Invalid nodes structure');
+        }
     } catch (e) {
+        console.error('Error parsing nodes JSON:', e);
+        console.error('Response was:', response);
         // Fallback parsing if not proper JSON
         state.nodes = parseNodesFromText(response);
+        console.log('Using fallback parsing, got:', state.nodes.length, 'nodes');
     }
 }
 
@@ -235,19 +257,29 @@ For this cycle:
 
 ${state.mappingMode === 'chaos' && cycleNum > 2 ? 'Add 2-3 new nodes that expand the symbolic network.' : ''}
 
-Return JSON:
+IMPORTANT: Return ONLY valid JSON, no other text.
+
+Format:
 {
   "edges": [{"from": "node1", "to": "node2", "relationship": "description"}],
   "newNodes": [{"id": "nodeX", "label": "New Concept", "type": "insight"}],
   "insights": "Key patterns discovered this cycle..."
 }`;
 
-    const userPrompt = `Perform cycle ${cycleNum} analysis. Analyze the current nodes and generate connections, patterns, and insights as specified.`;
+    const userPrompt = `Perform cycle ${cycleNum} analysis. Analyze the current nodes and generate connections, patterns, and insights as specified. Return ONLY the JSON response, no explanation.`;
     
     const response = await callClaudeAPI(systemPrompt, userPrompt);
     
+    console.log(`Cycle ${cycleNum} response:`, response.substring(0, 200));
+    
     try {
-        const data = JSON.parse(response);
+        // Remove any markdown code blocks
+        let cleanResponse = response.trim();
+        if (cleanResponse.startsWith('```')) {
+            cleanResponse = cleanResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+        }
+        
+        const data = JSON.parse(cleanResponse);
         if (data.edges) state.edges.push(...data.edges);
         if (data.newNodes) state.nodes.push(...data.newNodes);
         state.cycles.push({
@@ -256,8 +288,17 @@ Return JSON:
             nodeCount: state.nodes.length,
             edgeCount: state.edges.length
         });
+        console.log(`Cycle ${cycleNum} complete: ${state.nodes.length} nodes, ${state.edges.length} edges`);
     } catch (e) {
-        console.error('Error parsing cycle response:', e);
+        console.error(`Error parsing cycle ${cycleNum} response:`, e);
+        console.error('Response was:', response);
+        // Still add cycle info even if parsing failed
+        state.cycles.push({
+            cycle: cycleNum,
+            insights: 'Unable to parse cycle insights',
+            nodeCount: state.nodes.length,
+            edgeCount: state.edges.length
+        });
     }
 
     // Update visualization
