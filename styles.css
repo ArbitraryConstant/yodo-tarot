@@ -17,6 +17,131 @@
     box-sizing: border-box;
 }
 
+/* Landing Page Overlay */
+.landing-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: var(--bg-primary);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    animation: fadeIn 1s ease-out;
+}
+
+.landing-overlay.hidden {
+    animation: fadeOut 1s ease-out forwards;
+    pointer-events: none;
+}
+
+.landing-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.4;
+}
+
+.landing-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    animation: slideUpFade 1.5s ease-out;
+}
+
+.landing-title {
+    font-family: 'Cormorant Garamond', 'Georgia', serif;
+    font-size: 5rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--text-primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: glow 3s ease-in-out infinite;
+}
+
+.landing-subtitle {
+    font-family: 'Fira Sans', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 3rem;
+    opacity: 0.9;
+}
+
+.landing-button {
+    background: transparent;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    padding: 1.2rem 4rem;
+    font-size: 1.2rem;
+    font-family: 'Fira Sans', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.landing-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--accent);
+    transition: left 0.4s ease;
+    z-index: -1;
+}
+
+.landing-button:hover::before {
+    left: 0;
+}
+
+.landing-button:hover {
+    color: white;
+    box-shadow: 0 0 30px rgba(115, 102, 255, 0.6);
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        filter: drop-shadow(0 0 10px rgba(115, 102, 255, 0.5));
+    }
+    50% {
+        filter: drop-shadow(0 0 20px rgba(115, 102, 255, 0.8));
+    }
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
 body {
     font-family: 'Crimson Pro', 'Georgia', serif;
     background: var(--bg-primary);
@@ -386,6 +511,37 @@ h3 {
     padding: 3rem;
 }
 
+.loading-with-bg {
+    position: relative;
+    min-height: 400px;
+    background-image: url('yodotarotload.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-with-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 15, 0.7);
+    border-radius: 4px;
+}
+
+.loading-with-bg .spinner,
+.loading-with-bg p {
+    position: relative;
+    z-index: 1;
+}
+
 .loading .timer {
     color: var(--accent);
     font-size: 0.95rem;
@@ -698,6 +854,24 @@ h3 {
     .card-modal-close {
         top: 1rem;
         right: 1rem;
+    }
+    
+    /* Landing page mobile */
+    .landing-title {
+        font-size: 3rem;
+    }
+    
+    .landing-subtitle {
+        font-size: 1rem;
+    }
+    
+    .landing-button {
+        padding: 1rem 2.5rem;
+        font-size: 1rem;
+    }
+    
+    .loading-with-bg {
+        min-height: 300px;
     }
 }
 

@@ -4,12 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yodo Tarot - Rhizomatic Divination</title>
+    
+    <!-- Open Graph / Social Media Preview -->
+    <meta property="og:title" content="Yodo Tarot - Rhizomatic Divination & Analysis">
+    <meta property="og:description" content="Explore the depths of your psyche through philosophical tarot readings and rhizomatic mapping">
+    <meta property="og:image" content="https://yodotarot.com/og-image.png">
+    <meta property="og:url" content="https://yodotarot.com">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Yodo Tarot - Rhizomatic Divination">
+    <meta name="twitter:description" content="Explore the depths of your psyche through philosophical tarot readings">
+    <meta name="twitter:image" content="https://yodotarot.com/og-image.png">
+    
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="card-mapping.js"></script></script>
 </head>
 <body>
+    <!-- Landing Page Overlay -->
+    <div id="landing-overlay" class="landing-overlay">
+        <img src="yodotarolanding.png" alt="Yodo Tarot" class="landing-image">
+        <div class="landing-content">
+            <h1 class="landing-title">Yodo Tarot</h1>
+            <p class="landing-subtitle">Rhizomatic Divination & Analysis</p>
+            <button id="enter-app" class="landing-button">Enter</button>
+        </div>
+    </div>
+
     <div class="container">
         <header>
             <h1>Yodo Tarot</h1>
@@ -32,7 +56,7 @@
 
         <!-- Phase 2: Tarot Reading -->
         <section id="phase-reading" class="phase hidden">
-            <div class="loading hidden" id="reading-loading">
+            <div class="loading hidden loading-with-bg" id="reading-loading">
                 <div class="spinner"></div>
                 <p>Consulting the cards...</p>
                 <p class="timer" id="reading-timer">~30 seconds</p>
@@ -49,7 +73,7 @@
                 <h3>What else would you like to explore?</h3>
                 <textarea id="followup-question" placeholder="Ask a follow-up question, share what's arising, or reflect on what resonates..."></textarea>
                 <button id="submit-followup" class="primary-btn">Continue Reading</button>
-                <div class="loading hidden" id="followup-loading">
+                <div class="loading hidden loading-with-bg" id="followup-loading">
                     <div class="spinner"></div>
                     <p>Consulting the cards...</p>
                     <p class="timer" id="followup-timer">~30 seconds</p>

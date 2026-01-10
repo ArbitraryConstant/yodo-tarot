@@ -22,6 +22,18 @@ const state = {
 // Initialize application
 document.addEventListener('DOMContentLoaded', () => {
     initializeEventListeners();
+    
+    // Landing page enter button
+    const enterButton = document.getElementById('enter-app');
+    const landingOverlay = document.getElementById('landing-overlay');
+    
+    enterButton.addEventListener('click', () => {
+        landingOverlay.classList.add('hidden');
+        // Remove from DOM after animation
+        setTimeout(() => {
+            landingOverlay.remove();
+        }, 1000);
+    });
 });
 
 function initializeEventListeners() {
