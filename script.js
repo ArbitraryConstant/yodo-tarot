@@ -1,7 +1,7 @@
 // Configuration
 const CONFIG = {
-    apiKey: '', // Will be set from user input or environment
-    apiEndpoint: 'https://api.anthropic.com/v1/messages',
+    apiKey: '', // Will be fetched from server
+    apiEndpoint: '/api/claude', // Use server endpoint instead of direct API
     model: 'claude-sonnet-4-20250514',
     maxTokens: 4000
 };
@@ -22,28 +22,7 @@ const state = {
 // Initialize application
 document.addEventListener('DOMContentLoaded', () => {
     initializeEventListeners();
-    checkApiKey();
 });
-
-function checkApiKey() {
-    // Check if API key is stored or prompt for it
-    const storedKey = localStorage.getItem('anthropic_api_key');
-    if (storedKey) {
-        CONFIG.apiKey = storedKey;
-    } else {
-        promptForApiKey();
-    }
-}
-
-function promptForApiKey() {
-    const key = prompt('Please enter your Anthropic API key:\n(It will be stored locally in your browser)');
-    if (key) {
-        CONFIG.apiKey = key;
-        localStorage.setItem('anthropic_api_key', key);
-    } else {
-        alert('API key is required to use Yodo Tarot. Please refresh and enter your key.');
-    }
-}
 
 function initializeEventListeners() {
     // Phase 1: Reading type selection
@@ -390,30 +369,48 @@ function generateBasicSynthesis() {
 }
 
 async function callClaudeAPI(systemPrompt, userPrompt) {
-    const response = await fetch(CONFIG.apiEndpoint, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': CONFIG.apiKey,
-            'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-            model: CONFIG.model,
-            max_tokens: CONFIG.maxTokens,
-            system: systemPrompt,
-            messages: [
-                { role: 'user', content: userPrompt }
-            ]
-        })
-    });
+    console.log('=== callClaudeAPI called ===');
+    console.log('Endpoint:', CONFIG.apiEndpoint);
+    console.log('System prompt length:', systemPrompt?.length);
+    console.log('User prompt length:', userPrompt?.length);
+    
+    try {
+        const response = await fetch(CONFIG.apiEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                system: systemPrompt,
+                message: userPrompt
+            })
+        });
 
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(`API Error: ${error.error?.message || 'Unknown error'}`);
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            let errorData;
+            try {
+                errorData = JSON.parse(errorText);
+            } catch (e) {
+                throw new Error(`API Error (${response.status}): ${errorText}`);
+            }
+            throw new Error(`API Error: ${errorData.error || 'Unknown error'}`);
+        }
+
+        const data = await response.json();
+        console.log('Response data received, length:', data.response?.length);
+        return data.response;
+    } catch (error) {
+        console.error('=== callClaudeAPI error ===');
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Full error:', error);
+        throw error;
     }
-
-    const data = await response.json();
-    return data.content[0].text;
 }
 
 function displayReading(content) {
