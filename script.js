@@ -1,7 +1,7 @@
 // Configuration
 const CONFIG = {
-    apiKey: '', // Will be fetched from server
-    apiEndpoint: '/api/claude', // Use server endpoint instead of direct API
+    apiKey: '', // Will be set from user input or environment
+    apiEndpoint: 'https://api.anthropic.com/v1/messages',
     model: 'claude-sonnet-4-20250514',
     maxTokens: 4000
 };
@@ -22,7 +22,28 @@ const state = {
 // Initialize application
 document.addEventListener('DOMContentLoaded', () => {
     initializeEventListeners();
+    checkApiKey();
 });
+
+function checkApiKey() {
+    // Check if API key is stored or prompt for it
+    const storedKey = localStorage.getItem('anthropic_api_key');
+    if (storedKey) {
+        CONFIG.apiKey = storedKey;
+    } else {
+        promptForApiKey();
+    }
+}
+
+function promptForApiKey() {
+    const key = prompt('Please enter your Anthropic API key:\n(It will be stored locally in your browser)');
+    if (key) {
+        CONFIG.apiKey = key;
+        localStorage.setItem('anthropic_api_key', key);
+    } else {
+        alert('API key is required to use Yodo Tarot. Please refresh and enter your key.');
+    }
+}
 
 function initializeEventListeners() {
     // Phase 1: Reading type selection
@@ -372,21 +393,27 @@ async function callClaudeAPI(systemPrompt, userPrompt) {
     const response = await fetch(CONFIG.apiEndpoint, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'x-api-key': CONFIG.apiKey,
+            'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
+            model: CONFIG.model,
+            max_tokens: CONFIG.maxTokens,
             system: systemPrompt,
-            message: userPrompt
+            messages: [
+                { role: 'user', content: userPrompt }
+            ]
         })
     });
 
     if (!response.ok) {
         const error = await response.json();
-        throw new Error(`API Error: ${error.error || 'Unknown error'}`);
+        throw new Error(`API Error: ${error.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();
-    return data.response;
+    return data.content[0].text;
 }
 
 function displayReading(content) {
