@@ -242,7 +242,9 @@ Return JSON:
   "insights": "Key patterns discovered this cycle..."
 }`;
 
-    const response = await callClaudeAPI(systemPrompt, '');
+    const userPrompt = `Perform cycle ${cycleNum} analysis. Analyze the current nodes and generate connections, patterns, and insights as specified.`;
+    
+    const response = await callClaudeAPI(systemPrompt, userPrompt);
     
     try {
         const data = JSON.parse(response);
@@ -353,7 +355,9 @@ Create a comprehensive synthesis that includes:
 
 Write in a clear, insightful, and actionable style.`;
 
-    const response = await callClaudeAPI(systemPrompt, '');
+    const userPrompt = `Please create the final synthesis integrating all insights from the reading and rhizomatic mapping process.`;
+    
+    const response = await callClaudeAPI(systemPrompt, userPrompt);
     state.synthesis = response;
     document.getElementById('synthesis-content').innerHTML = formatContent(response);
 }
