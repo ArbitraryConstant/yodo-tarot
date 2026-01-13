@@ -840,22 +840,63 @@ function formatContent(text) {
 function formatContentWithCards(text) {
     const paragraphs = text.split('\n\n');
     const formattedParagraphs = [];
+    const shownCards = new Set(); // Track globally which cards we've shown
+    
+    // Detect if we're in the initial card layout section
+    // These typically have patterns like "Card 1", "Card 2", or "Position 1", etc.
+    let inCardLayoutSection = false;
     
     for (let para of paragraphs) {
         const paraText = para.trim();
         
-        // Check if this paragraph mentions any cards
+        // Check if this paragraph marks a card position (e.g., "Card 1", "**Card 2**", "Position 1:")
+        const isCardPositionParagraph = /(\*\*)?card\s+\d+/i.test(paraText) || 
+                                        /position\s+\d+/i.test(paraText) ||
+                                        /^\d+\.\s*\*\*/i.test(paraText);
+        
+        // Check if we're entering or still in the card layout section
+        if (isCardPositionParagraph) {
+            inCardLayoutSection = true;
+        }
+        
+        // Check if we're exiting the card layout section
+        // Common markers: "The Weaving", "Interpretation", "Analysis", "###", "**The"
+        const isInterpretationSection = /^\*\*[A-Z][^:]+:/i.test(paraText) && 
+                                        !/card\s+\d+/i.test(paraText) &&
+                                        !/position\s+\d+/i.test(paraText);
+        
+        if (isInterpretationSection && inCardLayoutSection) {
+            inCardLayoutSection = false;
+            shownCards.clear(); // Reset for interpretation sections
+        }
+        
+        // Detect cards in this paragraph
         const cardMatches = detectCardsInTextOrdered(paraText);
         
         // Insert paragraph first
         formattedParagraphs.push(`<p>${paraText}</p>`);
         
-        // Then insert card images in order of first mention, no duplicates
+        // Then insert card images
         if (cardMatches.length > 0) {
             for (let cardInfo of cardMatches) {
-                const cardKey = cardInfo.name.toLowerCase();
-                if (CARD_MAPPING[cardKey]) {
-                    formattedParagraphs.push(createCardHTML(cardInfo.name, CARD_MAPPING[cardKey], cardInfo.reversed));
+                const cardKey = `${cardInfo.name}-${cardInfo.reversed}`;
+                
+                // In card layout section: only show each card once
+                // Outside layout section: show cards as mentioned
+                if (inCardLayoutSection) {
+                    if (!shownCards.has(cardKey)) {
+                        const baseCardKey = cardInfo.name.toLowerCase();
+                        if (CARD_MAPPING[baseCardKey]) {
+                            formattedParagraphs.push(createCardHTML(cardInfo.name, CARD_MAPPING[baseCardKey], cardInfo.reversed));
+                            shownCards.add(cardKey);
+                        }
+                    }
+                } else {
+                    // In interpretation sections, show cards normally (can repeat)
+                    const baseCardKey = cardInfo.name.toLowerCase();
+                    if (CARD_MAPPING[baseCardKey]) {
+                        formattedParagraphs.push(createCardHTML(cardInfo.name, CARD_MAPPING[baseCardKey], cardInfo.reversed));
+                    }
                 }
             }
         }
