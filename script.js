@@ -42,19 +42,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Handle image load error - try alternate filename
+    // Handle image load error
     landingImage.addEventListener('error', () => {
-        console.log('Landing image failed to load, trying alternate path');
-        // Try with different case or path
-        landingImage.src = './yodotarolanding.png';
+        console.error('Landing image failed to load: yodotarothero.png');
     });
     
-    // Enter button
-    enterButton.addEventListener('click', () => {
+    // Function to enter app
+    const enterApp = () => {
         landingOverlay.classList.add('hidden');
         setTimeout(() => {
             landingOverlay.remove();
         }, 1000);
+    };
+    
+    // Make entire overlay clickable
+    landingOverlay.addEventListener('click', enterApp);
+    
+    // Enter button also triggers (redundant but clearer UX)
+    enterButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent double-triggering
+        enterApp();
     });
 });
 

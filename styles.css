@@ -31,6 +31,7 @@
     justify-content: center;
     overflow: hidden;
     animation: fadeIn 1s ease-out;
+    cursor: pointer;
 }
 
 .landing-overlay.hidden {
@@ -46,7 +47,7 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
-    opacity: 0.5;
+    opacity: 0.85;
 }
 
 .landing-content {
