@@ -82,13 +82,16 @@
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: #ffffff;
-    -webkit-text-fill-color: #ffffff;
-    -webkit-text-stroke: 1px #000000;
     margin-bottom: 3rem;
     text-shadow: 
+        /* Soft definition */
         0 0 2px rgba(0, 0, 0, 0.8),
-        0 0 20px rgba(115, 102, 255, 0.5),
-        0 2px 10px rgba(0, 0, 0, 0.7);
+        0 0 4px rgba(0, 0, 0, 0.6),
+        /* Purple glow */
+        0 0 15px rgba(115, 102, 255, 0.6),
+        0 0 30px rgba(115, 102, 255, 0.4),
+        /* Depth */
+        0 2px 10px rgba(0, 0, 0, 0.8);
 }
 
 .landing-button {
