@@ -60,22 +60,27 @@
 .landing-title {
     font-family: 'Cormorant Garamond', 'Georgia', serif;
     font-size: 5rem;
-    font-weight: 400;
+    font-weight: 500;
     letter-spacing: 0.15em;
     margin-bottom: 1rem;
     color: #ffffff;
+    /* Smooth multi-directional black outline */
     text-shadow: 
-        /* Soft outline for definition */
-        0 0 2px rgba(0, 0, 0, 0.8),
-        0 0 4px rgba(0, 0, 0, 0.6),
-        /* Purple ethereal glow */
-        0 0 20px rgba(115, 102, 255, 0.8),
-        0 0 40px rgba(115, 102, 255, 0.6),
-        0 0 60px rgba(115, 102, 255, 0.4),
-        /* Depth shadow */
-        0 4px 15px rgba(0, 0, 0, 0.9),
-        0 8px 30px rgba(0, 0, 0, 0.7);
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000,
+        -2px -2px 0 #000,
+        2px -2px 0 #000,
+        -2px 2px 0 #000,
+        2px 2px 0 #000,
+        /* Soften the outline edges */
+        0 0 3px rgba(0, 0, 0, 0.9),
+        /* Purple glow for mystical effect */
+        0 0 25px rgba(115, 102, 255, 0.6),
+        0 0 50px rgba(115, 102, 255, 0.4),
+        /* Drop shadow for depth */
+        0 4px 15px rgba(0, 0, 0, 0.8);
     animation: glow 3s ease-in-out infinite;
 }
 
@@ -85,17 +90,20 @@
     font-weight: 400;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: #e8e8f0;
+    color: #ffffff;
     margin-bottom: 3rem;
     text-shadow: 
-        /* Soft definition */
-        0 0 2px rgba(0, 0, 0, 0.8),
-        0 0 4px rgba(0, 0, 0, 0.6),
+        /* Black outline */
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000,
+        /* Soften edges */
+        0 0 2px rgba(0, 0, 0, 0.9),
         /* Purple glow */
-        0 0 15px rgba(115, 102, 255, 0.6),
-        0 0 30px rgba(115, 102, 255, 0.4),
+        0 0 20px rgba(115, 102, 255, 0.5),
         /* Depth */
-        0 2px 10px rgba(0, 0, 0, 0.8);
+        0 2px 10px rgba(0, 0, 0, 0.7);
 }
 
 .landing-button {
